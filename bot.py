@@ -11,12 +11,14 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, InputMediaPhoto
 
 from general.emun import EVENT_TYPE_THREAD
+from config import setting
 
 
-# Bot token can be obtained via https://t.me/BotFather
-TOKEN = "7021966412:AAGiep_cJFE_sh-_BcWFv3cMZl9Cz4rd2vg"
 # All handlers should be attached to the Router (or Dispatcher)
-bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(
+    token=setting.tg.token,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+)
 dp = Dispatcher(bot=bot)
 
 
