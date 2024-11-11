@@ -90,7 +90,7 @@ async def answer_chat_id_and_thread(message: Message) -> None:
     await message.answer(text)
 
 
-group_id = -1002456367513
+#group_id = 
 
 
 # @dp.message(F.chat.type.in_({"group", "supergroup"}))
