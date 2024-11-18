@@ -2,34 +2,39 @@ import logging
 from telethon import TelegramClient
 from telethon.events import NewMessage
 from general.emun import EVENT_TYPE_THREAD
-from general.scripts import take_event
+from general.schemas import EventTo
+from general.scripts import (
+    # convert_to_list_or_ev,
+    is_list,
+    retn_event_type_with_logs,
+    take_event,
+)
 from config import setting
 
 
 async def new_message_handler(event: NewMessage) -> None:
-    # async def handler(event: NewMessage.Event) -> None:
+    # * Проверяем является сообщение альбомом
+    if event.grouped_id:
+        return
+
     client: TelegramClient = event.client
-    ev = take_event(event)
-    # print(client)
+    ev: EventTo | list[EventTo] = take_event(event)
     if not ev:
         return
 
-    event_type = ev.type_of.replace(" ", "_").upper()
-    chat_thread = EVENT_TYPE_THREAD[event_type].value
+    ev_type = retn_event_type_with_logs(ev)
+    ev_type = ev_type.replace(" ", "_").upper()
+    chat_thread = EVENT_TYPE_THREAD[ev_type].value
 
-    if event.grouped_id:
-        return
-    else:
-        await client.send_message(
-            int(setting.tg.send_chat_id),
-            message=event.message,
-            reply_to=chat_thread,
-        )
-        logging.info(
-            f"Send simple message! Type:{ev.type_of} Time:{ev.time} Dvr:{ev.dvr}"
-        )
+    await client.send_message(
+        int(setting.tg.send_chat_id),
+        message=event.message,
+        reply_to=chat_thread,
+    )
 
-    # return handler
-
-
-#
+    log_text = (
+        f"Send simple message! Type:{ev[0].type_of if is_list(ev) else ev.type_of}"
+        f"Time:{ev[0].time if is_list(ev) else ev.time}"
+        f"Dvr:{ev[0].dvr if is_list(ev) else ev.dvr}"
+    )
+    logging.info(log_text)

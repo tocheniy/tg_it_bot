@@ -1,19 +1,21 @@
 # scripts
-
-
 from datetime import datetime
+import logging
+import re
 from general.schemas import EventTo
 
 
-def take_event(msg) -> EventTo:
+def take_event(msg) -> EventTo | list[EventTo] | None:
     msg_list = [item for item in msg.raw_text.split("\n") if item != ""]
     if len(msg_list) < 2:
-        return
+        return None
 
     event_type = ""
     event_time = ""
     dvr_name = ""
     camera_name = ""
+    cameras_names = []
+    result = []
     ev: EventTo | None = None
 
     for item in msg_list:
@@ -29,20 +31,67 @@ def take_event(msg) -> EventTo:
 
         elif "CAMERA NAME(NUM)" in item:
             camera_name = item.split(":")[1].strip()
+            # (\w+|\w+\s\w+(\([A-Z]\d+\)\B))
+            # "(\d+\s\w+\([A-Z]\d+\))"
+            pattern = r"((\w+|\w+\s\w+)(\([A-Z]\d+\)))"
+            cameras_names = [item[0] for item in re.findall(pattern, camera_name)]
 
-    if all([event_type, event_time, dvr_name, camera_name]):
+    if cameras_names and len(cameras_names) >= 2:
+        for camera in cameras_names:
+            result.append(
+                EventTo(
+                    type_of=event_type,
+                    time=event_time,
+                    dvr=dvr_name,
+                    camera=camera,
+                )
+            )
+        return result
+    elif cameras_names:
         ev = EventTo(
             type_of=event_type,
             time=event_time,
             dvr=dvr_name,
-            camera=camera_name,
+            camera=cameras_names[0],
         )
+        return ev
 
-    if all([event_type == "HDD Error", event_time, dvr_name]):
+    elif event_type == "HDD Error":
         ev = EventTo(
             type_of=event_type,
             time=event_time,
             dvr=dvr_name,
+            # camera=camera,
         )
+        return ev
 
-    return ev
+
+def is_list(ev):
+    if not isinstance(ev, list):
+        return False
+    return True
+
+
+def retn_event_type_with_logs(events: EventTo | list[EventTo]):
+    if isinstance(events, list) and len(events) >= 2:
+        for evnt in events:
+            log_text = (
+                f"LOGS_MAIN#EVENTS Type:{evnt.type_of}"
+                f" | Time:{evnt.time}"
+                f" | Dvr:{evnt.dvr}"
+                f" | Cam: {evnt.camera}"
+            )
+            logging.info(log_text)
+        return evnt.type_of
+
+    elif isinstance(events, EventTo):
+        # print(events)
+        log_text = (
+            f"LOGS_MAIN#EVENTS Type:{events.type_of}"
+            f" | Time:{events.time}"
+            f" | Dvr:{events.dvr}"
+        )
+        if events.camera:
+            log_text += f" | Cam: {events.camera}"
+        logging.info(log_text)
+        return events.type_of

@@ -1,8 +1,6 @@
 import logging
 from telethon import TelegramClient  # , events  # , sync
 import sys
-
-
 sys.path.append(".")
 from config import setting
 from activator import setup_handler

@@ -1,5 +1,5 @@
-import logging
-from general.emun import EVENT_TYPE_THREAD
+# import logging
+# from general.emun import EVENT_TYPE_THREAD
 # from person.person import client
 
 from handler.newmessage import new_message_handler
