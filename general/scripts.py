@@ -61,7 +61,6 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
             type_of=event_type,
             time=event_time,
             dvr=dvr_name,
-            # camera=camera,
         )
         return ev
 

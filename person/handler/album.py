@@ -6,7 +6,6 @@ from general.emun import EVENT_TYPE_THREAD
 from config import setting
 from general.schemas import EventTo
 from general.scripts import (
-    # convert_to_list_or_ev,
     is_list,
     retn_event_type_with_logs,
     take_event,
