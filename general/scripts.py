@@ -9,7 +9,6 @@ from config import setting
 setting.chats.update_data()
 
 
-
 def take_event(msg) -> EventTo | list[EventTo] | None:
     msg_list = [item for item in msg.raw_text.split("\n") if item != ""]
     if len(msg_list) < 2:
@@ -62,6 +61,7 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
 
     if cameras_names and len(cameras_names) >= 2:
         for camera in cameras_names:
+            ev = ev.model_copy(deep=True)
             ev.camera = camera
             result.append(ev)
         return result
@@ -84,9 +84,10 @@ def write_event_logs(events: EventTo | list[EventTo]):
     if isinstance(events, list) and len(events) >= 2:
         for evnt in events:
             log_text = (
-                f"LOGS_MAIN#EVENTS Type:{evnt.type_of}"
-                f" | Time:{evnt.time}"
-                f" | Dvr:{evnt.dvr}"
+                f"LOGS_MAIN#EVENTS Type: {evnt.type_of}"
+                f" | Time: {evnt.time}"
+                f" | City: {evnt.city}"
+                f" | Dvr: {evnt.dvr}"
                 f" | Cam: {evnt.camera}"
             )
             logging.info(log_text)
@@ -94,9 +95,10 @@ def write_event_logs(events: EventTo | list[EventTo]):
     elif isinstance(events, EventTo):
         # print(events)
         log_text = (
-            f"LOGS_MAIN#EVENTS Type:{events.type_of}"
-            f" | Time:{events.time}"
-            f" | Dvr:{events.dvr}"
+            f"LOGS_MAIN#EVENTS Type: {events.type_of}"
+            f" | Time: {events.time}"
+            f" | City: {events.city}"
+            f" | Dvr: {events.dvr}"
         )
         if events.camera:
             log_text += f" | Cam: {events.camera}"
