@@ -29,6 +29,6 @@ async def album_handler(album: Album) -> None:
     )
 
     log_text = (
-        f"Send album message! Type:{ev.type_of}" f"Time:{ev.time}" f"Dvr:{ev.dvr}"
+        f"Send album message! Type:{ev.type_of}" f" | Time:{ev.time}" f" | Dvr:{ev.dvr}"
     )
     logging.info(log_text)
