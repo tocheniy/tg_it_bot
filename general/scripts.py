@@ -3,6 +3,11 @@ from datetime import datetime
 import logging
 import re
 from general.schemas import EventTo
+from config import setting
+
+# * Обновляем чаты при запуске
+setting.chats.update_data()
+
 
 
 def take_event(msg) -> EventTo | list[EventTo] | None:
@@ -14,6 +19,9 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
     event_time = ""
     dvr_name = ""
     camera_name = ""
+    city = ""
+    chat_id = 0
+    thread = 0
     cameras_names = []
     result = []
     ev: EventTo | None = None
@@ -28,6 +36,7 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
 
         elif "DVR NAME" in item:
             dvr_name = item.split(":")[1].strip()
+            city = dvr_name.split(" ")[2]
 
         elif "CAMERA NAME(NUM)" in item:
             camera_name = item.split(":")[1].strip()
@@ -36,42 +45,42 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
             pattern = r"((\w+|\w+\s\w+)(\([A-Z]\d+\)))"
             cameras_names = [item[0] for item in re.findall(pattern, camera_name)]
 
+    chats = setting.chats.result
+    city_chat = chats.get(city.lower())
+    chat_id = city_chat.get("chat_id")
+    ev_type_for_thread = event_type.lower().replace(" ", "_")
+    thread = city_chat.get("thread").get(ev_type_for_thread)
+
+    ev = EventTo(
+        type_of=event_type,
+        time=event_time,
+        dvr=dvr_name,
+        city=city,
+        chat_id=chat_id,
+        thread=thread,
+    )
+
     if cameras_names and len(cameras_names) >= 2:
         for camera in cameras_names:
-            result.append(
-                EventTo(
-                    type_of=event_type,
-                    time=event_time,
-                    dvr=dvr_name,
-                    camera=camera,
-                )
-            )
+            ev.camera = camera
+            result.append(ev)
         return result
+
     elif cameras_names:
-        ev = EventTo(
-            type_of=event_type,
-            time=event_time,
-            dvr=dvr_name,
-            camera=cameras_names[0],
-        )
+        ev.camera = cameras_names[0]
         return ev
 
     elif event_type == "HDD Error":
-        ev = EventTo(
-            type_of=event_type,
-            time=event_time,
-            dvr=dvr_name,
-        )
         return ev
 
 
-def is_list(ev):
-    if not isinstance(ev, list):
-        return False
-    return True
+def get_one_event(ev: EventTo | list[EventTo]) -> EventTo:
+    if isinstance(ev, list):
+        return ev[0]
+    return ev
 
 
-def retn_event_type_with_logs(events: EventTo | list[EventTo]):
+def write_event_logs(events: EventTo | list[EventTo]):
     if isinstance(events, list) and len(events) >= 2:
         for evnt in events:
             log_text = (
@@ -81,7 +90,6 @@ def retn_event_type_with_logs(events: EventTo | list[EventTo]):
                 f" | Cam: {evnt.camera}"
             )
             logging.info(log_text)
-        return evnt.type_of
 
     elif isinstance(events, EventTo):
         # print(events)
@@ -93,4 +101,3 @@ def retn_event_type_with_logs(events: EventTo | list[EventTo]):
         if events.camera:
             log_text += f" | Cam: {events.camera}"
         logging.info(log_text)
-        return events.type_of

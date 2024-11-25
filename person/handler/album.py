@@ -3,11 +3,11 @@ from telethon import TelegramClient
 from telethon.events import Album
 from general.emun import EVENT_TYPE_THREAD
 
-from config import setting
+# from config import setting
 from general.schemas import EventTo
 from general.scripts import (
-    is_list,
-    retn_event_type_with_logs,
+    get_one_event,
+    write_event_logs,
     take_event,
 )
 
@@ -18,21 +18,20 @@ async def album_handler(album: Album) -> None:
     if not ev:
         return
     # print(ev)
-    ev_type = retn_event_type_with_logs(ev)
-    ev_type = ev_type.replace(" ", "_").upper()
-    chat_thread = EVENT_TYPE_THREAD[ev_type].value
+    write_event_logs(ev)
+    ev = get_one_event(ev)
+    chat_id = ev.chat_id
+    chat_thread = ev.thread
     files = [mes.media for mes in album.messages]
     # print(album.original_update.message.message)
     await client.send_file(
-        int(setting.tg.send_chat_id),
+        chat_id,
         caption=album.original_update.message.message,
         file=files,
         reply_to=chat_thread,
     )
 
     log_text = (
-        f"Send album message! Type:{ev[0].type_of if is_list(ev) else ev.type_of}"
-        f"Time:{ev[0].time if is_list(ev) else ev.time}"
-        f"Dvr:{ev[0].dvr if is_list(ev) else ev.dvr}"
+        f"Send album message! Type:{ev.type_of}" f"Time:{ev.time}" f"Dvr:{ev.dvr}"
     )
     logging.info(log_text)
