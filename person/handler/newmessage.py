@@ -1,14 +1,12 @@
 import logging
 from telethon import TelegramClient
 from telethon.events import NewMessage
-from general.emun import EVENT_TYPE_THREAD
 from general.schemas import EventTo
 from general.scripts import (
     get_one_event,
     write_event_logs,
     take_event,
 )
-# from config import setting
 
 
 async def new_message_handler(event: NewMessage) -> None:
