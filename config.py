@@ -1,5 +1,6 @@
 # import os
 # from typing import List
+import json
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -31,9 +32,30 @@ class Redis(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="RD_")
 
 
+class Chats(BaseSettings):
+    result: dict | None = None
+    # vlg: int | None = None
+
+    def __call__(self):
+        chats: dict = {}
+        with open("chats.json") as j_file:
+            chats = json.loads(j_file)
+        print(chats)
+
+    def update_data(self):
+        chats: dict = {}
+        with open("chats.json") as j_file:
+            chats = json.load(j_file)
+        chats = chats.get("city")
+        self.result = chats
+        # print(chats)
+        return True
+    
+
 class Setting(BaseSettings):
     tg: Telegram = Telegram()
     redis: Redis = Redis()
+    chats: Chats = Chats()
 
 
 setting = Setting()
@@ -44,3 +66,5 @@ if __name__ == "__main__":
     print(setting.tg.token)
     print(setting.tg.chans_ids_convert())
     print(setting.redis.host)
+    print(setting.chats.update_data())
+    print(setting.chats.result)
