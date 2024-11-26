@@ -46,7 +46,10 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
 
     chats = setting.chats.result
     city_chat = chats.get(city.lower())
+    if city_chat is None:
+        return None
     chat_id = city_chat.get("chat_id")
+
     ev_type_for_thread = event_type.lower().replace(" ", "_")
     thread = city_chat.get("thread").get(ev_type_for_thread)
 
