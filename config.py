@@ -34,7 +34,6 @@ class Redis(BaseSettings):
 
 class Chats(BaseSettings):
     result: dict | None = None
-    # vlg: int | None = None
 
     def __call__(self):
         chats: dict = {}
@@ -50,7 +49,7 @@ class Chats(BaseSettings):
         self.result = chats
         # print(chats)
         return True
-    
+
 
 class Setting(BaseSettings):
     tg: Telegram = Telegram()
