@@ -45,7 +45,10 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
             cameras_names = [item[0] for item in re.findall(pattern, camera_name)]
 
     chats = setting.chats.result
-    city_chat = chats.get(city.lower())
+    city = city.lower()
+    if city not in ["msk", "vlg"]:
+        city = "other"
+    city_chat = chats.get(city)
     if city_chat is None:
         return None
     chat_id = city_chat.get("chat_id")
