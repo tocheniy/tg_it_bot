@@ -16,7 +16,7 @@ class Database(BaseSettings):
     password: str
     name: str
     charset: str
-    echo: bool = True
+    echo: bool = False
 
     def url(self) -> str:
         return f"{self.dbms}+{self.driver}://{self.user}:{self.password}@{self.host}:{str(self.port)}/{self.name}?charset={self.charset}"
