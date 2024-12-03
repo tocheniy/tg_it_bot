@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.main import Base
 
 
@@ -10,3 +10,4 @@ class Dvr(Base):
     login: Mapped[str] = mapped_column(String(16), nullable=False)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
     city: Mapped[str] = mapped_column(String(20), nullable=False)
+    events: Mapped[list["Event"]] = relationship(back_populates="dvr")  # type: ignore  # noqa: F821
