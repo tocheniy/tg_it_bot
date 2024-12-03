@@ -8,7 +8,7 @@ from general.scripts import (
     write_event_logs,
     take_event,
 )
-
+# from database.crud.dvr import get_dvr_by_name
 
 async def album_handler(album: Album) -> None:
     client: TelegramClient = album.client
@@ -16,7 +16,7 @@ async def album_handler(album: Album) -> None:
     if not ev:
         return
 
-    write_event_logs(ev)
+    await write_event_logs(ev)
     ev = get_one_event(ev)
     chat_id = ev.chat_id
     chat_thread = ev.thread

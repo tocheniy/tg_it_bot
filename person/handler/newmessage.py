@@ -19,7 +19,7 @@ async def new_message_handler(event: NewMessage) -> None:
     if not ev:
         return
 
-    write_event_logs(ev)
+    await write_event_logs(ev)
     ev = get_one_event(ev)
     chat_id = ev.chat_id
     chat_thread = ev.thread

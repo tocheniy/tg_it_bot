@@ -2,6 +2,7 @@
 from datetime import datetime
 import logging
 import re
+from database.crud.dvr import get_dvr_by_name
 from general.schemas import EventTo
 from config import setting
 
@@ -86,9 +87,13 @@ def get_one_event(ev: EventTo | list[EventTo]) -> EventTo:
     return ev
 
 
-def write_event_logs(events: EventTo | list[EventTo]):
+async def write_event_logs(events: EventTo | list[EventTo]):
     if isinstance(events, list) and len(events) >= 2:
         for evnt in events:
+            dvr = await get_dvr_by_name(evnt.dvr)
+            if not dvr:
+                continue
+            print(dvr)
             log_text = (
                 f"LOGS_MAIN#EVENTS Type: {evnt.type_of}"
                 f" | Time: {evnt.time}"
@@ -99,7 +104,10 @@ def write_event_logs(events: EventTo | list[EventTo]):
             logging.info(log_text)
 
     elif isinstance(events, EventTo):
-        # print(events)
+        dvr = await get_dvr_by_name(events.dvr)
+        if not dvr:
+            return
+        print(dvr)
         log_text = (
             f"LOGS_MAIN#EVENTS Type: {events.type_of}"
             f" | Time: {events.time}"
