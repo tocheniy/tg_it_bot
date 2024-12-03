@@ -7,6 +7,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 load_dotenv()
 
 
+class Database(BaseSettings):
+    dbms: str
+    driver: str
+    host: str
+    port: int
+    user: str
+    password: str
+    name: str
+    charset: str
+    echo: bool = True
+
+    def url(self) -> str:
+        return f"{self.dbms}+{self.driver}://{self.user}:{self.password}@{self.host}:{str(self.port)}/{self.name}?charset={self.charset}"
+
+    model_config = SettingsConfigDict(env_prefix="DB_")
+
+
 class Telegram(BaseSettings):
     api_id: str
     api_hash: str
@@ -52,6 +69,7 @@ class Chats(BaseSettings):
 
 
 class Setting(BaseSettings):
+    db: Database = Database()
     tg: Telegram = Telegram()
     redis: Redis = Redis()
     chats: Chats = Chats()
@@ -67,3 +85,4 @@ if __name__ == "__main__":
     print(setting.redis.host)
     print(setting.chats.update_data())
     print(setting.chats.result)
+    print(setting.db.url())
