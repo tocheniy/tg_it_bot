@@ -1,11 +1,20 @@
 # scripts
+import sys
+import asyncio
 from datetime import datetime
 import logging
 import re
+
+from database.models.event import Event
+
+if __name__ == "__main__":
+    sys.path.append(".")
 from database.crud.dvr import get_dvr_by_name
-from general.schemas import EventTo
+from database.crud.event import add_event
+from general.schemas import EventModel, EventTo
 from config import setting
 
+logging.basicConfig(level=logging.DEBUG)
 # * Обновляем чаты при запуске
 setting.chats.update_data()
 
@@ -87,33 +96,78 @@ def get_one_event(ev: EventTo | list[EventTo]) -> EventTo:
     return ev
 
 
-async def write_event_logs(events: EventTo | list[EventTo]):
+async def define_event_and_add_to_database(
+    events: EventTo | list[EventTo],
+) -> list[Event] | Event | None:
     if isinstance(events, list) and len(events) >= 2:
+        res = []
         for evnt in events:
-            dvr = await get_dvr_by_name(evnt.dvr)
-            if not dvr:
+            event_from_db = await add_event_to_db(evnt)
+            if not event_from_db:
                 continue
-            print(dvr)
-            log_text = (
-                f"LOGS_MAIN#EVENTS Type: {evnt.type_of}"
-                f" | Time: {evnt.time}"
-                f" | City: {evnt.city}"
-                f" | Dvr: {evnt.dvr}"
-                f" | Cam: {evnt.camera}"
-            )
-            logging.info(log_text)
+            res.append(event_from_db)
+            display_event_log(evnt)
+        if not res:
+            return None
+        return res
 
     elif isinstance(events, EventTo):
-        dvr = await get_dvr_by_name(events.dvr)
-        if not dvr:
-            return
-        print(dvr)
-        log_text = (
-            f"LOGS_MAIN#EVENTS Type: {events.type_of}"
-            f" | Time: {events.time}"
-            f" | City: {events.city}"
-            f" | Dvr: {events.dvr}"
-        )
-        if events.camera:
-            log_text += f" | Cam: {events.camera}"
-        logging.info(log_text)
+        event_from_db = await add_event_to_db(events)
+        if not event_from_db:
+            return None
+        display_event_log(events)
+        return event_from_db
+
+
+async def add_event_to_db(event: EventTo) -> Event | None:
+    dvr = await get_dvr_by_name(event.dvr)
+    if not dvr:
+        return
+    event = EventModel(
+        dvr_id=dvr.id,
+        name=event.type_of,
+        camera=event.camera,
+        time=event.time,
+    )
+    # print(event)
+    event = await add_event(event)
+    if not event:
+        return None
+    return event
+
+
+def display_event_log(event: EventTo):
+    datetime_format = "%Y-%m-%d %H:%M:%S"
+    log_text = (
+        f"LOGS_MAIN#EVENTS Type: {event.type_of}"
+        f" | Time: {event.time.strftime(datetime_format)}"
+        f" | City: {event.city}"
+        f" | Dvr: {event.dvr}"
+    )
+    if event.camera:
+        log_text += f" | Cam: {event.camera}"
+    logging.info(log_text)
+
+
+# async def main():
+#     ev = [
+#         EventTo(
+#             type_of="dsadas",
+#             time=datetime.now(),
+#             camera="Cam",
+#             dvr="Reg 1 VLG",
+#             city="MSK",
+#         ),
+#         EventTo(
+#             type_of="dsadas",
+#             time=datetime.now(),
+#             camera="Cam",
+#             dvr="Reg 1 VLG",
+#             city="MSK",
+#         ),
+#     ]
+#     await define_event_and_add_to_database(ev)
+
+
+# if __name__ == "__main__":
+#     asyncio.run(main())

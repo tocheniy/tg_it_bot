@@ -5,10 +5,11 @@ from telethon.events import Album
 from general.schemas import EventTo
 from general.scripts import (
     get_one_event,
-    write_event_logs,
+    define_event_and_add_to_database,
     take_event,
 )
 # from database.crud.dvr import get_dvr_by_name
+
 
 async def album_handler(album: Album) -> None:
     client: TelegramClient = album.client
@@ -16,7 +17,10 @@ async def album_handler(album: Album) -> None:
     if not ev:
         return
 
-    await write_event_logs(ev)
+    event_from_db = await define_event_and_add_to_database(ev)
+    if not event_from_db:
+        return
+
     ev = get_one_event(ev)
     chat_id = ev.chat_id
     chat_thread = ev.thread
