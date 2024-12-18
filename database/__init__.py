@@ -2,3 +2,5 @@
 
 from database.models.dvr import Base  # noqa: F401
 from database.models.event import Base  # noqa: F401, F811
+from database.models.city import Base  # noqa: F401, F811
+from database.models.chat import Base  # noqa: F401, F811
