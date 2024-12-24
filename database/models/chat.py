@@ -1,11 +1,11 @@
-from sqlalchemy import String, Integer
+from sqlalchemy import Integer, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.main import Base
 
 
 class Chat(Base):
     __tablename__ = "chats"
-    tg_chat_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    tg_chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     hdd_error: Mapped[int] = mapped_column(Integer, nullable=False)
     view_tampering: Mapped[int] = mapped_column(Integer, nullable=False)
     video_signal_lost: Mapped[int] = mapped_column(Integer, nullable=False)
