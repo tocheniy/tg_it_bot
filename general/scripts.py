@@ -1,6 +1,7 @@
 # scripts
 import sys
-import asyncio
+
+# import asyncio
 from datetime import datetime
 import logging
 import re
@@ -11,7 +12,7 @@ if __name__ == "__main__":
     sys.path.append(".")
 from database.crud.dvr import get_dvr_by_name
 from database.crud.event import add_event
-from general.schemas import EventModel, EventTo
+from general.schemas import EventDbSch, EventTgSch
 from config import setting
 
 logging.basicConfig(level=logging.DEBUG)
@@ -19,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG)
 setting.chats.update_data()
 
 
-def take_event(msg) -> EventTo | list[EventTo] | None:
+def take_event(msg) -> EventTgSch | list[EventTgSch] | None:
     msg_list = [item for item in msg.raw_text.split("\n") if item != ""]
     if len(msg_list) < 2:
         return None
@@ -33,7 +34,7 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
     thread = 0
     cameras_names = []
     result = []
-    ev: EventTo | None = None
+    ev: EventTgSch | None = None
 
     for item in msg_list:
         if "EVENT TYPE" in item:
@@ -66,7 +67,7 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
     ev_type_for_thread = event_type.lower().replace(" ", "_")
     thread = city_chat.get("thread").get(ev_type_for_thread)
 
-    ev = EventTo(
+    ev = EventTgSch(
         type_of=event_type,
         time=event_time,
         dvr=dvr_name,
@@ -90,14 +91,14 @@ def take_event(msg) -> EventTo | list[EventTo] | None:
         return ev
 
 
-def get_one_event(ev: EventTo | list[EventTo]) -> EventTo:
+def get_one_event(ev: EventTgSch | list[EventTgSch]) -> EventTgSch:
     if isinstance(ev, list):
         return ev[0]
     return ev
 
 
 async def define_event_and_add_to_database(
-    events: EventTo | list[EventTo],
+    events: EventTgSch | list[EventTgSch],
 ) -> list[Event] | Event | None:
     if isinstance(events, list) and len(events) >= 2:
         res = []
@@ -111,7 +112,7 @@ async def define_event_and_add_to_database(
             return None
         return res
 
-    elif isinstance(events, EventTo):
+    elif isinstance(events, EventTgSch):
         event_from_db = await add_event_to_db(events)
         if not event_from_db:
             return None
@@ -119,24 +120,24 @@ async def define_event_and_add_to_database(
         return event_from_db
 
 
-async def add_event_to_db(event: EventTo) -> Event | None:
+async def add_event_to_db(event: EventTgSch) -> Event | None:
     dvr = await get_dvr_by_name(event.dvr)
     if not dvr:
         return
-    event = EventModel(
+    event = EventDbSch(
         dvr_id=dvr.id,
         name=event.type_of,
         camera=event.camera,
         time=event.time,
     )
-    # print(event)
+
     event = await add_event(event)
     if not event:
         return None
     return event
 
 
-def display_event_log(event: EventTo):
+def display_event_log(event: EventTgSch):
     datetime_format = "%Y-%m-%d %H:%M:%S"
     log_text = (
         f"LOGS_MAIN#EVENTS Type: {event.type_of}"

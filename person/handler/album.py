@@ -2,7 +2,7 @@ import logging
 from telethon import TelegramClient
 from telethon.events import Album
 
-from general.schemas import EventTo
+from general.schemas import EventTgSch
 from general.scripts import (
     get_one_event,
     define_event_and_add_to_database,
@@ -13,7 +13,7 @@ from general.scripts import (
 
 async def album_handler(album: Album) -> None:
     client: TelegramClient = album.client
-    ev: EventTo | list[EventTo] = take_event(album)
+    ev: EventTgSch | list[EventTgSch] = take_event(album)
     if not ev:
         return
 

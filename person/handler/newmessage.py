@@ -1,7 +1,7 @@
 import logging
 from telethon import TelegramClient
 from telethon.events import NewMessage
-from general.schemas import EventTo
+from general.schemas import EventTgSch
 from general.scripts import (
     get_one_event,
     define_event_and_add_to_database,
@@ -15,7 +15,7 @@ async def new_message_handler(event: NewMessage) -> None:
         return
 
     client: TelegramClient = event.client
-    ev: EventTo | list[EventTo] = take_event(event)
+    ev: EventTgSch | list[EventTgSch] = take_event(event)
     if not ev:
         return
 

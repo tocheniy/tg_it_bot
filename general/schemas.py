@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
 
-class EventTo(BaseModel):
+class EventTgSch(BaseModel):
     type_of: str = Field(serialization_alias="event_type")
     time: datetime = Field(serialization_alias="event_time")
     dvr: str = Field(serialization_alias="dvr_name")
@@ -12,10 +12,18 @@ class EventTo(BaseModel):
     thread: int | None = Field(default=None)
 
 
-class EventModel(BaseModel):
+class EventDbSch(BaseModel):
     id: int | None = None
     name: str
     dvr_id: int
     camera: str | None = None
     time: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EventWithDvr(BaseModel):
+    name: str | None = None
+    ip: str | None = None
+    city: str | None = None
+    event: EventDbSch
     model_config = ConfigDict(from_attributes=True)
