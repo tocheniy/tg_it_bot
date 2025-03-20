@@ -2,6 +2,9 @@ import asyncio
 import sys
 from sqlalchemy import select
 
+# from database.models.chat import Chat
+# from database.models.division import Division
+
 if __name__ == "__main__":
     sys.path.append(".")
 from database.main import async_session
@@ -24,9 +27,9 @@ async def get_all_dvrs() -> list[Dvr]:
 async def get_dvr_by_name(name: str) -> Dvr | None:
     try:
         async with async_session as session:
-            stmt = select(Dvr)
-            stmt = stmt.where(Dvr.name == name)
-            res = await session.execute(stmt)
+            query = select(Dvr)
+            query = query.where(Dvr.name == name)
+            res = await session.execute(query)
             res = res.one_or_none()
             return res[0] if res else None
 
@@ -43,5 +46,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    # asyncio.get_event_loop().run_until_complete(main())
-    asyncio.run(main())
+    asyncio.get_event_loop().run_until_complete(main())
+    # asyncio.run(main())
