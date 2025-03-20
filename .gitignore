@@ -166,3 +166,6 @@ data.json
 *.session
 *.session-journal
 chats.json
+1.txt
+2.txt
+*.png
