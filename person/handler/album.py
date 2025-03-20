@@ -4,7 +4,8 @@ from telethon.events import Album
 
 from general.schemas import EventTgSch
 from general.scripts import (
-    get_one_event,
+    get_chat_with_thread_from_event,
+    # get_one_event,
     define_event_and_add_to_database,
     take_event,
 )
@@ -13,26 +14,31 @@ from general.scripts import (
 
 async def album_handler(album: Album) -> None:
     client: TelegramClient = album.client
-    ev: EventTgSch | list[EventTgSch] = take_event(album)
-    if not ev:
+    # * События
+    event = take_event(album)
+    if not event:
         return
 
-    event_from_db = await define_event_and_add_to_database(ev)
-    if not event_from_db:
+    event_with_chat_from_db = await define_event_and_add_to_database(event)
+    if not event_with_chat_from_db:
         return
-
-    ev = get_one_event(ev)
-    chat_id = ev.chat_id
-    chat_thread = ev.thread
+    
+    if isinstance(event, list):
+        event_with_chat_from_db = event_with_chat_from_db[0]
+        event = event[0]
+    
+    chat_id, thread = await get_chat_with_thread_from_event(event_with_chat_from_db)
     files = [mes.media for mes in album.messages]
     await client.send_file(
         chat_id,
         caption=album.original_update.message.message,
         file=files,
-        reply_to=chat_thread,
+        reply_to=thread,
     )
 
     log_text = (
-        f"Send album message! Type:{ev.type_of}" f" | Time:{ev.time}" f" | Dvr:{ev.dvr}"
+        f"Send album message! Type:{event.type_of}"
+        f" | Time:{event.time}"
+        f" | Dvr:{event.dvr}"
     )
     logging.info(log_text)
