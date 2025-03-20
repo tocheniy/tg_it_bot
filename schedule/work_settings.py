@@ -3,7 +3,8 @@ from arq.cron import cron
 from arq import Worker
 from config import setting
 from telethon import TelegramClient
-from schedule.task import send_message
+# from schedule.task import send_message
+from schedule.event_tasks import send_statistics
 # from task import send_message
 
 rd_settings = RedisSettings(
@@ -17,12 +18,9 @@ rd_settings = RedisSettings(
 async def startup(ctx):
     ctx["client"] = TelegramClient(
         "session_schedule",
-        # "session_name",
         setting.tg.api_id,
         setting.tg.api_hash,
     )
-    ctx["text"] = "Привет Алешка!!!"
-
     client: TelegramClient = ctx["client"]
     await client.start()
 
@@ -35,8 +33,8 @@ async def shutdown(ctx):
 class WorkerSettings(Worker):
     on_startup = startup
     on_shutdown = shutdown
-    functions = [send_message]
-    cron_jobs = [cron(send_message, second={10, 20, 30}, run_at_startup=True)]
+    # functions = [send_message]
+    cron_jobs = [cron(send_statistics, second={10, 20, 30}, run_at_startup=True)]
     redis_settings = rd_settings
     log_results = True
 
