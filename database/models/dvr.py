@@ -5,12 +5,12 @@ from database.main import Base
 
 class Dvr(Base):
     __tablename__ = "dvrs"
-    name: Mapped[str] = mapped_column(String(30), nullable=False)
-    ip: Mapped[str] = mapped_column(String(16), nullable=False)
-    login: Mapped[str] = mapped_column(String(16), nullable=False)
-    password: Mapped[str] = mapped_column(String(20), nullable=False)
-    city: Mapped[str] = mapped_column(String(20), nullable=False)
-    city_id: Mapped[int] = mapped_column(ForeignKey("cities.id"), nullable=True)
-    
+    name: Mapped[str] = mapped_column(String(30))
+    ip: Mapped[str] = mapped_column(String(16))
+    login: Mapped[str] = mapped_column(String(16))
+    password: Mapped[str] = mapped_column(String(20))
+
+    division_id: Mapped[int | None] = mapped_column(ForeignKey("divisions.id"))
+    division: Mapped["Division"] = relationship(back_populates="dvrs", lazy="joined")  # type: ignore # noqa: F821
+
     events: Mapped[list["Event"]] = relationship(back_populates="dvr")  # type: ignore  # noqa: F821
-    city_tmp: Mapped["City"] = relationship(back_populates="dvrs")  # type: ignore  # noqa: F821
