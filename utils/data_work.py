@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from general.schemas import StatSch
+
 
 def get_counts_and_col_names_by_event_type(df: pd.DataFrame, mask, mask_name: str):
     df = df[mask]
@@ -61,7 +63,9 @@ def make_graphic(data, mask_name, chat_id, date, chat_name):
         print(Ex)
 
 
-def make_statistic(data: list[dict], chat_id: int, date, chat_name: str):
+def make_statistic(
+    data: list[dict], chat_id: int, date, chat_name: str
+) -> list[StatSch | None]:
     df = pd.DataFrame(data)
     df["event_time"] = pd.to_datetime(df["event_time"], format="%Y-%m-%d %H:%M:%S")
 
@@ -72,16 +76,28 @@ def make_statistic(data: list[dict], chat_id: int, date, chat_name: str):
     mask_names = ["View Tampering", "HDD Error", "Video Signal Lost"]
 
     masks_tuple = [(df["event_type"] == item, item) for item in mask_names]
-    files = []
+    # files = []
+    res = []
     for df_mask, mask_name in masks_tuple:
-        data = get_counts_and_col_names_by_event_type(df, df_mask, mask_name)
+        data_for_graph = get_counts_and_col_names_by_event_type(df, df_mask, mask_name)
         # print(data)
-        if not data:
+        if not data_for_graph:
             continue
-        graph = make_graphic(data, mask_name, chat_id, date, chat_name)
-        files.append(graph)
-
-    return files
+        # print(mask_name)
+        events_count = data_for_graph[0]["errors"].sum()
+        graph = make_graphic(data_for_graph, mask_name, chat_id, date, chat_name)
+        # files.append(graph)
+        res.append(
+            StatSch(
+                file_name=graph,
+                event_type=mask_name,
+                count=events_count,
+                data=data_for_graph[0]["errors"].head(5).to_string(),
+            )
+        )
+    # print(res)
+    return res
+    # return files
 
 
 # * Надо удалить потом
