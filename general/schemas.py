@@ -8,7 +8,7 @@ class EventTgSch(BaseModel):
     dvr: str = Field(serialization_alias="dvr_name")
     camera: str | None = Field(default=None, serialization_alias="camera_name")
     city: str | None = Field(default=None, serialization_alias="city")
-    
+
     # ! - Не нужно
     # chat_id: int | None = Field(default=None)
     # thread: int | None = Field(default=None)
@@ -23,11 +23,13 @@ class EventDbSch(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class EventWithDvr(BaseModel):
+class EventWithDvrAndDiv(BaseModel):
     name: str | None = None
     ip: str | None = None
     city: str | None = None
     event: EventDbSch
+    division_name: str | None = None
+
     model_config = ConfigDict(from_attributes=True)
 
 

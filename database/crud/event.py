@@ -1,9 +1,9 @@
 # import asyncio
 # from datetime import datetime
 import asyncio
-from datetime import datetime, timedelta
+from datetime import timedelta  # datetime,
 import sys
-from sqlalchemy import func, select
+from sqlalchemy import select  # func
 from sqlalchemy.sql import and_
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     sys.path.append(".")
 from database.models.chat import Chat
 from database.models.division import Division
-from general.schemas import EventDbSch, EventWithDvr
+from general.schemas import EventDbSch, EventWithDvrAndDiv
 from database.main import async_session
 from database.models.event import Event
 from database.models.dvr import Dvr
@@ -21,7 +21,7 @@ from database.models.dvr import Dvr
 async_session = async_session()
 
 
-async def get_events_by_dvrname(name: str) -> list[EventWithDvr]:
+async def get_events_by_dvrname(name: str) -> list[EventWithDvrAndDiv]:
     try:
         async with async_session as session:
             stmt = select(
@@ -33,7 +33,7 @@ async def get_events_by_dvrname(name: str) -> list[EventWithDvr]:
             res = await session.execute(stmt)
             res = res.all()
             res = [
-                EventWithDvr(
+                EventWithDvrAndDiv(
                     name=item.dvr_name,
                     ip=item.ip,
                     city=item.city,
@@ -46,10 +46,10 @@ async def get_events_by_dvrname(name: str) -> list[EventWithDvr]:
         print(ex)
 
 
-async def get_events_by_datetime(time: str) -> list[EventWithDvr]:
+async def get_events_by_datetime(time: str) -> list[EventWithDvrAndDiv]:
     try:
         first_time = parser.parse(time)
-        last_time = first_time + timedelta(hours=23, minutes=59, seconds=59)
+        last_time = first_time + timedelta(hours=24, minutes=00, seconds=00)
         async with async_session as session:
             query = select(Event, Dvr, Division)
             query = query.join(Dvr, Dvr.id == Event.dvr_id)
@@ -61,7 +61,7 @@ async def get_events_by_datetime(time: str) -> list[EventWithDvr]:
             res = await session.execute(query)
             res = res.all()
             res = [
-                EventWithDvr(
+                EventWithDvrAndDiv(
                     name=dvr.name,
                     ip=dvr.ip,
                     city=division.city.ru_name,
@@ -77,7 +77,7 @@ async def get_events_by_datetime(time: str) -> list[EventWithDvr]:
 async def get_events_by_datetime_and_chat(
     time: str,
     chat_id: int,
-) -> list[EventWithDvr]:
+) -> list[EventWithDvrAndDiv]:
     try:
         first_time = parser.parse(time)
         last_time = first_time + timedelta(hours=24, minutes=00, seconds=00)
@@ -96,11 +96,12 @@ async def get_events_by_datetime_and_chat(
             res = await session.execute(query)
             res = res.all()
             res = [
-                EventWithDvr(
+                EventWithDvrAndDiv(
                     name=dvr.name,
                     ip=dvr.ip,
                     city=division.city.ru_name,
                     event=event,
+                    division_name=division.name,
                 )
                 for event, dvr, division, chat in res
             ]
@@ -109,7 +110,9 @@ async def get_events_by_datetime_and_chat(
         print(ex)
 
 
-async def get_events_by_city_and_datetime(city: str, time: str) -> list[EventWithDvr]:
+async def get_events_by_city_and_datetime(
+    city: str, time: str
+) -> list[EventWithDvrAndDiv]:
     try:
         first_time = parser.parse(time)
         last_time = first_time + timedelta(hours=23, minutes=59, seconds=59)
@@ -131,7 +134,7 @@ async def get_events_by_city_and_datetime(city: str, time: str) -> list[EventWit
             res = await session.execute(stmt)
             res = res.all()
             res = [
-                EventWithDvr(
+                EventWithDvrAndDiv(
                     name=item.dvr_name,
                     ip=item.ip,
                     city=item.city,

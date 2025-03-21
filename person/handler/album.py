@@ -2,7 +2,7 @@ import logging
 from telethon import TelegramClient
 from telethon.events import Album
 
-from general.schemas import EventTgSch
+# from general.schemas import EventTgSch
 from general.scripts import (
     get_chat_with_thread_from_event,
     # get_one_event,
