@@ -4,9 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-with open("data.json", "r", encoding="utf-8") as f:
-    data = json.loads(f.read())
-
 
 def get_counts_and_col_names_by_event_type(df: pd.DataFrame, mask, mask_name: str):
     df = df[mask]
