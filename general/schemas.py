@@ -1,4 +1,6 @@
 from datetime import datetime
+from pathlib import Path
+from pandas import DataFrame
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -48,3 +50,11 @@ class EventWithChat(BaseModel):
     chat: ChatDbSch
     event: EventDbSch
     model_config = ConfigDict(from_attributes=True)
+
+
+class StatSch(BaseModel):
+    file_name: str | Path
+    event_type: str
+    count: int
+    data: DataFrame | str
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
