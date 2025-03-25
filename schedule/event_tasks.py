@@ -76,10 +76,10 @@ def get_ru_text_for_event_type(event_type):
     res = ""
     match event_type:
         case "View Tampering":
-            res = "Ошибки детектора перекрытия камеры"
+            res = "Перекрытия"
         case "HDD Error":
-            res = "Ошибки детектора проблем с жестким диском"
+            res = "Жесткий диск"
         case "Video Signal Lost":
-            res = "Ошибки детектора потери видео"
+            res = "Потери видео"
 
     return res
