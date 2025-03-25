@@ -34,7 +34,7 @@ def get_text_for_title(mask_name, date, chat_name):
 
 def make_graphic(data, mask_name, chat_id, date, chat_name):
     try:
-        plt.figure(figsize=(16, 8))
+        fig = plt.figure(figsize=(16, 8))
 
         title = get_text_for_title(
             mask_name=mask_name,
@@ -57,6 +57,7 @@ def make_graphic(data, mask_name, chat_id, date, chat_name):
         dst_file = Path(dst_folder, file_name).absolute()
 
         plt.savefig(dst_file)
+        plt.close(fig)
         return dst_file
     # statistic graphs
     except Exception as Ex:
@@ -84,7 +85,10 @@ def make_statistic(
         if not data_for_graph:
             continue
         # print(mask_name)
+        # events_count = data_for_graph[0]["errors"].sum()
         events_count = data_for_graph[0]["errors"].sum()
+        # print(events_count)
+        # return 
         graph = make_graphic(data_for_graph, mask_name, chat_id, date, chat_name)
         # files.append(graph)
         res.append(

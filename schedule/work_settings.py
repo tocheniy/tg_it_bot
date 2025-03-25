@@ -31,7 +31,7 @@ async def startup(ctx):
         return
     for chat in chats:
         tg_chat_id = chat.tg_chat_id
-        mesg = "Планировки заданий запущен ✔️"
+        mesg = "Планировщик заданий запущен ✔️"
         await client.send_message(tg_chat_id, mesg)
 
 
@@ -43,7 +43,7 @@ async def shutdown(ctx):
 
     for chat in chats:
         tg_chat_id = chat.tg_chat_id
-        mesg = "Планировки заданий запущен остановлен ❌"
+        mesg = "Планировщик заданий остановлен ❌"
         await client.send_message(tg_chat_id, mesg)
     await client.disconnect()
 
@@ -54,7 +54,7 @@ class WorkerSettings(Worker):
     # functions = [send_message]
     cron_jobs = [cron(send_statistics, hour={8}, minute={10})]
     # # * Тест
-    # cron_jobs = [cron(send_statistics, second={10, 20, 30, 40, 50})]
+    # cron_jobs = [cron(send_statistics, second={30})]
     redis_settings = rd_settings
     log_results = True
 
