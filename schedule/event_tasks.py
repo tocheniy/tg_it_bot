@@ -19,7 +19,7 @@ async def send_statistics(ctx):
         chats = await get_chats()
         if not chats:
             return
-        # print(f"{len(chats)=}")
+        print(f"{len(chats)=}")
         # print(chats[0].tg_chat_id)
         for chat in chats:
             stat_thread = chat.statistic
@@ -27,7 +27,7 @@ async def send_statistics(ctx):
             events = await get_events_by_datetime_and_chat(prev_day, tg_chat_id)
             if not events:
                 return
-            # print(f"{len(events)=}")
+            print(f"{len(events)=}")
 
             res = []
             for ev in events:
