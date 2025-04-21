@@ -6,11 +6,13 @@ from database.crud.chat import get_chats
 from database.crud.event import get_events_by_datetime_and_chat
 from general.schemas import StatSch
 from utils.data_work import make_statistic
+from arq import Retry
 
 
 async def send_statistics(ctx):
     try:
         client: TelegramClient = ctx["client"]
+        logger = ctx["logger"]
 
         day = datetime.now().date()
         prev_day = day - timedelta(hours=24, minutes=00, seconds=00)
@@ -18,16 +20,17 @@ async def send_statistics(ctx):
 
         chats = await get_chats()
         if not chats:
-            return
+            raise Retry(defer=5)
         print(f"{len(chats)=}")
-        # print(chats[0].tg_chat_id)
         for chat in chats:
             stat_thread = chat.statistic
             tg_chat_id = chat.tg_chat_id
             events = await get_events_by_datetime_and_chat(prev_day, tg_chat_id)
             if not events:
-                return
-            print(f"{len(events)=}")
+                logger.info(
+                    f"У чата {tg_chat_id} | {chat.name} нет событий за {prev_day}"
+                )
+                continue
 
             res = []
             for ev in events:
@@ -39,16 +42,14 @@ async def send_statistics(ctx):
                 }
 
                 res.append(ev_for_graphic)
-            # print(len(res))
             stats = make_statistic(res, tg_chat_id, prev_day, chat.name)
 
             # return
             cap = f"Статистика {chat.name} за {prev_day}\n\n"
             cap += f"{'-' * 20}\n"
-            # cap = ""
-            print(chat.name)
             cap = get_cap_text(cap, stats)
-            print()
+            logger.info(f"Отправляем статистику в чат {tg_chat_id} | {chat.name}")
+            logger.info(f"Статистика: {cap}")
             await client.send_file(
                 tg_chat_id,
                 caption=cap,
@@ -58,12 +59,12 @@ async def send_statistics(ctx):
 
     except Exception as Ex:
         print(Ex)
+        raise Retry(defer=5)
 
 
 def get_cap_text(cap: str, stats: list[StatSch]):
     for stat in stats:
         print(f"{stat.event_type} | кол-во: {stat.count}")
-        # print()
         event_type = get_ru_text_for_event_type(stat.event_type)
         cap += f"{event_type} | кол-во: {stat.count}\n"
         cap += f"{stat.data}\n"
