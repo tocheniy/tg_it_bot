@@ -79,9 +79,9 @@ class WorkerSettings(Worker):
     on_startup = startup
     on_shutdown = shutdown
     # functions = [send_message]
-    # cron_jobs = [cron(send_statistics, hour={9}, minute={30})]
+    cron_jobs = [cron(send_statistics, hour={9}, minute={30})]
     # * Тест
-    cron_jobs = [cron(send_statistics, second={30})]
+    # cron_jobs = [cron(send_statistics, second={30})]
     redis_settings = rd_settings
     log_results = True
 
