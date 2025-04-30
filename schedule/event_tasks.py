@@ -24,7 +24,7 @@ async def send_statistics(ctx):
         chats = await get_chats()
         if not chats:
             raise Retry(defer=2)
-        print(f"{len(chats)=}")
+        # print(f"{len(chats)=}")
         for chat in chats:
             stat_thread = chat.statistic
             tg_chat_id = chat.tg_chat_id
@@ -67,7 +67,7 @@ async def send_statistics(ctx):
 
 def get_cap_text(cap: str, stats: list[StatSch]):
     for stat in stats:
-        print(f"{stat.event_type} | кол-во: {stat.count}")
+        # print(f"{stat.event_type} | кол-во: {stat.count}")
         event_type = get_ru_text_for_event_type(stat.event_type)
         cap += f"{event_type} | кол-во: {stat.count}\n"
         cap += f"{stat.data}\n"
