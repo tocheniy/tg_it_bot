@@ -1,10 +1,24 @@
 import json
+import logging
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from arq import Retry
 
 from general.schemas import StatSch
+
+logger = logging.getLogger("data_work")
+logger.setLevel(logging.DEBUG)
+# Настройка консольного вывода
+console_handler = logging.StreamHandler()
+# Форматтер для логов
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
 
 
 def get_counts_and_col_names_by_event_type(df: pd.DataFrame, mask, mask_name: str):
@@ -30,6 +44,13 @@ def get_text_for_title(mask_name, date, chat_name):
     res += f"\n{chat_name}"
     res += f"\n{date}"
     return res
+
+
+def search_file(dst_file: Path | str):
+    dst_file = Path(dst_file).absolute()
+    if not dst_file.exists():
+        return None
+    return dst_file
 
 
 def make_graphic(data, mask_name, chat_id, date, chat_name):
@@ -61,13 +82,20 @@ def make_graphic(data, mask_name, chat_id, date, chat_name):
         return dst_file
     # statistic graphs
     except Exception as Ex:
-        print(Ex)
+        logger.error(f"Ошибка при создании изображения: {Ex}")
+        return None
 
 
 def make_statistic(
     data: list[dict], chat_id: int, date, chat_name: str
 ) -> list[StatSch | None]:
+    if not data or len(data) == 0:
+        return []
+
     df = pd.DataFrame(data)
+    if df.empty:
+        return []
+
     df["event_time"] = pd.to_datetime(df["event_time"], format="%Y-%m-%d %H:%M:%S")
 
     # * HDD Error, View Tampering, Video Signal Lost
@@ -88,12 +116,15 @@ def make_statistic(
         # events_count = data_for_graph[0]["errors"].sum()
         events_count = data_for_graph[0]["errors"].sum()
         # print(events_count)
-        # return 
-        graph = make_graphic(data_for_graph, mask_name, chat_id, date, chat_name)
+        # return
+        graph_dst = make_graphic(data_for_graph, mask_name, chat_id, date, chat_name)
+        find_file = search_file(dst_file=graph_dst)
+        if not find_file:
+            raise Retry(defer=5)
         # files.append(graph)
         res.append(
             StatSch(
-                file_name=graph,
+                file_name=graph_dst,
                 event_type=mask_name,
                 count=events_count,
                 data=data_for_graph[0]["errors"].head(5).to_string(),
@@ -102,39 +133,3 @@ def make_statistic(
     # print(res)
     return res
     # return files
-
-
-# * Надо удалить потом
-# tamp_df = df[tamp_mask]
-# counts = pd.DataFrame(tamp_df["camera_name"].value_counts().head(10))
-# counts["camera_name"] = counts.index
-# counts.columns = ["errors", "camera_name"]
-
-# hdd_er_df = df[hdd_er_mask]
-# hdd_er_counts = pd.DataFrame(hdd_er_df["dvr_name"].value_counts().head(10))
-# hdd_er_counts["dvr_name"] = hdd_er_counts.index
-# hdd_er_counts.columns = ["errors", "dvr_name"]
-
-# lost_df = df[lost_mask]
-# lost_count = pd.DataFrame(lost_df["camera_name"].value_counts().head(10))
-# lost_count["camera_name"] = lost_count.index
-# lost_count.columns = ["errors", "camera_name"]
-
-
-# plt.figure(figsize=(16, 8))
-# plt.title("Ошибки Детектора тампера")
-# bar = sns.barplot(x="camera_name", y="errors", data=counts)
-# [item.set_rotation(8) for item in bar.get_xticklabels()]
-# plt.savefig("tamp.png")
-
-# plt.figure(figsize=(16, 8))
-# plt.title("Ошибки Детектора Проблем с Жестким Диском")
-# bar = sns.barplot(x="dvr_name", y="errors", data=hdd_er_counts)
-# [item.set_rotation(8) for item in bar.get_xticklabels()]
-# plt.savefig("hdd_err.png")
-
-# plt.figure(figsize=(16, 8))
-# plt.title("Ошибки Детектора Потери Видео")
-# bar = sns.barplot(x="camera_name", y="errors", data=lost_count)
-# [item.set_rotation(8) for item in bar.get_xticklabels()]
-# plt.savefig("lost.png")

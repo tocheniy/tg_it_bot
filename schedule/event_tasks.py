@@ -13,6 +13,9 @@ async def send_statistics(ctx):
     try:
         client: TelegramClient = ctx["client"]
         logger = ctx["logger"]
+        if not client.is_connected():
+            logger.info("Переподключение к Telegram...")
+            await client.connect()
 
         day = datetime.now().date()
         prev_day = day - timedelta(hours=24, minutes=00, seconds=00)
@@ -20,7 +23,7 @@ async def send_statistics(ctx):
 
         chats = await get_chats()
         if not chats:
-            raise Retry(defer=5)
+            raise Retry(defer=2)
         print(f"{len(chats)=}")
         for chat in chats:
             stat_thread = chat.statistic
@@ -58,7 +61,7 @@ async def send_statistics(ctx):
             )
 
     except Exception as Ex:
-        print(Ex)
+        logger.error(f"Ошибка при отправке статистики: {Ex}")
         raise Retry(defer=5)
 
 
