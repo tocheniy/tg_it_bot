@@ -120,7 +120,8 @@ def make_statistic(
         graph_dst = make_graphic(data_for_graph, mask_name, chat_id, date, chat_name)
         find_file = search_file(dst_file=graph_dst)
         if not find_file:
-            raise Retry(defer=5)
+            logger.warning(f"Файл {graph_dst} не найден")
+            continue
         # files.append(graph)
         res.append(
             StatSch(

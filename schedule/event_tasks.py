@@ -46,13 +46,17 @@ async def send_statistics(ctx):
 
                 res.append(ev_for_graphic)
             stats = make_statistic(res, tg_chat_id, prev_day, chat.name)
-
+            if not stats:
+                logger.info(
+                    f"У чата {tg_chat_id} | {chat.name} нет статистики за {prev_day}"
+                )
+                continue
             # return
             cap = f"Статистика {chat.name} за {prev_day}\n\n"
             cap += f"{'-' * 20}\n"
             cap = get_cap_text(cap, stats)
             logger.info(f"Отправляем статистику в чат {tg_chat_id} | {chat.name}")
-            logger.info(f"Статистика: {cap}")
+            # logger.info(f"Статистика: {cap}")
             await client.send_file(
                 tg_chat_id,
                 caption=cap,
