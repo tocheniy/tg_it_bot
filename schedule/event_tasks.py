@@ -23,7 +23,7 @@ async def send_statistics(ctx):
 
         chats = await get_chats()
         if not chats:
-            raise Retry(defer=2)
+            raise Retry(defer=ctx["job_try"] * 5)
         # print(f"{len(chats)=}")
         for chat in chats:
             stat_thread = chat.statistic
