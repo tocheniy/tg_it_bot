@@ -66,7 +66,7 @@ async def send_statistics(ctx):
 
     except Exception as Ex:
         logger.error(f"Ошибка при отправке статистики: {Ex}")
-        raise Retry(defer=5)
+        raise Retry(defer=ctx["job_try"] * 5)
 
 
 def get_cap_text(cap: str, stats: list[StatSch]):
